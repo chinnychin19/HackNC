@@ -1,0 +1,4 @@
+HackNC
+======
+
+Hackathon at UNC
