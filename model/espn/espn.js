@@ -200,13 +200,13 @@ function filter(articles, target){
 			var description = article["categories"][cat]["description"];
 				//console.log(typeof(description))				
 				if (description.contains(target) && !isInArray(raw_articles, article))
-						raw_articles.push(article);
-				}
+					raw_articles.push(article);
+				
 			}
 		}
 			//console.log(article["categories"][cat]);
 
-	}
+	
 	return raw_articles;
 }
 exports.getESPNHeadlines=getESPNHeadlines;
