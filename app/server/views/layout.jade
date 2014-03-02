@@ -1,9 +1,16 @@
 doctype html
 html
 	head
-		title Node.js Login
+		title TLDR Sports
+		link(rel='stylesheet', href='/vendor/bootstrap.old.min.css')
 		link(rel='stylesheet', href='/vendor/bootstrap.min.css')
 		link(rel='stylesheet', href='/css/style.css')
 	body
+		div.navbar.navbar-fixed-top
+			div.navbar-inner
+				div.container-fluid
+					ul#global-nav.nav.pull-left
+						a(href='#').brand TLDR Sports
+					block signout
 	block content
 	block scripts
