@@ -45,7 +45,7 @@ function getESPNHeadlines(callback, team){
 	//for(var headline in espnHeadlines);
 	//return titlesText;
 	}
-function initESPN(team,callback){
+function initESPN(target,callback){
 
 var ESPN = unirest.get("http://api.espn.com/v1/sports/football/nfl/news/?disable=mobileStory%2Caudio&limit="+settings['numResults']+"&apikey=" + APIKEY)
 .headers({ 
@@ -53,7 +53,7 @@ var ESPN = unirest.get("http://api.espn.com/v1/sports/football/nfl/news/?disable
   })
   .end(function (response) {
   	var listToBePopulated = [];
-    var articlesToScrape = filter(response["body"]["headlines"], team);
+    var articlesToScrape = filter(response["body"]["headlines"], target);
     var espnHeadlines = [];
     var pageUrls = [];
     for (var article in articlesToScrape){
@@ -189,16 +189,16 @@ settings["numResults"] = results;
 Inputs: All the articles originally pulled down by the ESPN API
 Outputs: The articles related to our specific teams 
 */
-function filter(articles, team){
+function filter(articles, target){
 	var raw_articles = [];
 	for (var a in articles){
 		var article = articles[a];
 		for (var cat in article["categories"]){
-			for (var team in myTeams){
+			for (var t in myTeams){
 				var description = article["categories"][cat]["description"];
 				//console.log(typeof(description))
-				for (var team in myTeams){					
-				if (description.contains(team) && !isInArray(raw_articles, article))
+				for (var t in myTeams){					
+				if (description.contains(target) && !isInArray(raw_articles, article))
 						raw_articles.push(article);
 				}
 			}
