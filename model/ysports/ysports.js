@@ -16,15 +16,15 @@ var baseYahoo = 'http://sports.yahoo.com';
 /*
 Inputs: Params that decide which subsection of sports yahoo to look in.
 */
-function getArticles(callback){
-  var base = determineBaseURL(params);
+function getArticles(callback, team){
+  var base = determineBaseURL(params, team);
   //Step 2: call initYahoo using (baseURL)
   initYahoo(base, callback);
   
 
 }
-function determineBaseURL(search_params){
-  return 'http://sports.yahoo.com';
+function determineBaseURL(team){
+  return 'http://sports.yahoo.com/nfl';
 }
 
 function initYahoo(base,callback){
@@ -32,7 +32,9 @@ function initYahoo(base,callback){
 nodeIO.scrape(function() {    
     this.getHtml(base, function(err, $){
       var listToBePopulated = [];
-      getYahooHeadlines(err, $, base, listToBePopulated, callback);
+      var urls = [];
+      var titles = [];
+      getYahooHeadlines(err, $, base, listToBePopulated, titles, urls, callback);
     });  
 });
 }
@@ -46,7 +48,7 @@ if (element["children"][0]["name"] == "a")
     return element["children"][0]["attribs"]["href"]
 else return findLink(element["children"][0]);
 }
-function getYahooHeadlines(err, $, base, listToBePopulated, callback){
+function getYahooHeadlines(err, $, base, listToBePopulated, titles, urls, callback){
   $('.list-story').each(function(title) { 
    // var refLink = title["children"][0]["children"][0]["attribs"]["href"] // get to the a tag of yahoo headlines
    var refLink = findLink(title);
@@ -58,21 +60,23 @@ function getYahooHeadlines(err, $, base, listToBePopulated, callback){
     }
     else{
       pageUrl = baseYahoo + refLink;
-      processYahooPage(pageUrl, listToBePopulated, callback);     
+      urls.push(pageUrl);
+      titles.push(title);
+      processYahooPage(pageUrl, listToBePopulated, titles, urls, callback);     
     }
       
   }
   });           
 }
-function processYahooPage(pageUrl, listToBePopulated, callback){
+function processYahooPage(pageUrl, listToBePopulated,titles, urls, callback){
   nodeIO.scrape(function() {
   this.getHtml(pageUrl, function(err, $){
-    getYahooPageContent($, pageUrl, listToBePopulated, callback);
+    getYahooPageContent($, pageUrl, listToBePopulated, titles, urls, callback);
   });
 });
 }
 
-function getYahooPageContent($, pageUrl, listToBePopulated, callback){
+function getYahooPageContent($, pageUrl, listToBePopulated, titles, urls, callback){
   
   var articleText = ""; // set to the final text
   $('p').each(function(p_raw){ //switch to each when done looking
@@ -100,11 +104,18 @@ function getYahooPageContent($, pageUrl, listToBePopulated, callback){
 //console.log(articleText);
 listToBePopulated.push(articleText);
 if(listToBePopulated.length == numArticles){
-  callback(listToBePopulated);
+  callback(zip(listToBePopulated,titles, urls));
 }
 
 }
-
+function zip(a, b, c){
+  var ret = [];
+for (var i = 0; i < a.length; i++){
+   ret[i] = {"title": b[i], "story": a[i], "url": c[i]}
+   console.log(ret[i]);
+}
+return ret;
+}
 
 function clean_text(raw_input){
 var div = window.document.createElement("div");
