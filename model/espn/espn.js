@@ -124,7 +124,7 @@ function getEspnArticle(err, $, pageUrl, listToBePopulated, espnHeadlines, pageU
 	articleText = clean_text(raw_text);
 	listToBePopulated.push(articleText);
 	console.log(listToBePopulated);
-	if (listToBePopulated.length == espnHeadlines.length){
+	if (listToBePopulated.length == settings['numResults']){
 		callback(zip(listToBePopulated, pageUrls, espnHeadlines));
 	}
 }
@@ -197,10 +197,8 @@ function filter(articles, target){
 	for (var a in articles){
 		var article = articles[a];
 		for (var cat in article["categories"]){
-			for (var t in myTeams){
-				var description = article["categories"][cat]["description"];
-				//console.log(typeof(description))
-				for (var t in myTeams){					
+			var description = article["categories"][cat]["description"];
+				//console.log(typeof(description))				
 				if (description.contains(target) && !isInArray(raw_articles, article))
 						raw_articles.push(article);
 				}

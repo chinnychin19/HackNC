@@ -8,7 +8,7 @@ var keywords = [];
 var nodeIO = require('node.io');
 var jsdom = require("jsdom").jsdom;
 var window = jsdom().parentWindow;
-var numArticles = 4;
+var numArticles = 3;
 var params = [];
 //var baseYahoo = getBase('http://sports.yahoo.com/', params); // need to build a way of changing the base of the reqest to check the headlines of specific pages
 var baseYahoo = 'http://sports.yahoo.com'; 
@@ -61,7 +61,7 @@ function getYahooHeadlines(err, $, base, listToBePopulated, titles, urls, callba
     else{
       pageUrl = baseYahoo + refLink;
       urls.push(pageUrl);
-      titles.push(title);
+      titles.push(title.fulltext);
       processYahooPage(pageUrl, listToBePopulated, titles, urls, callback);     
     }
       
@@ -109,8 +109,9 @@ if(listToBePopulated.length == numArticles){
 
 }
 function zip(a, b, c){
+  console.log("zip");
   var ret = [];
-for (var i = 0; i < a.length; i++){
+for (var i = 0; i < numArticles; i++){
    ret[i] = {"title": b[i], "story": a[i], "url": c[i]}
    console.log(ret[i]);
 }
@@ -126,5 +127,7 @@ return decoded;
 
 //test.
 exports.getYahooHeadlines=getArticles;
-
+getArticles(function(articles){
+  console.log(articles);
+}, "Washington Redskins");
 
