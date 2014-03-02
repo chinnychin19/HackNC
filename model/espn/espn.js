@@ -211,9 +211,6 @@ function filter(articles, target){
 	}
 	return raw_articles;
 }
-//exports.getESPNHeadlines=getESPNHeadlines;
+exports.getESPNHeadlines=getESPNHeadlines;
 //callback is needed 
-getESPNHeadlines(function(articles){
-	console.log(articles);
-}, "Miami Dolphins")
 //getTeamInformation();

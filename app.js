@@ -30,18 +30,45 @@ http.createServer(app).listen(app.get('port'), function(){
 	console.log("Express server listening on port " + app.get('port'));
 });
 
+// var fs = require('fs');
+// var teams = JSON.parse(fs.readFileSync('./model/espn/espnTeamIds.json'));
+var teams = ["Atlanta Falcons",
+"Buffalo Bills",
+"Chicago Bears",
+"Cincinnati Bengals",
+"Cleveland Browns",
+"Dallas Cowboys",
+"Denver Broncos",
+"Detroit Lions",
+"Green Bay Packers",
+"Tennessee Titans",
+"Indianapolis Colts",
+"Kansas City Chiefs",
+"Oakland Raiders",
+"St. Louis Rams",
+"Miami Dolphins",
+"Minnesota Vikings",
+"New England Patriots"];
 
-
+var espn = require('./model/espn/espn.js');
+var yahoo = require('./model/ysports/ysports.js');
+var textteaser = require('./customModules/textteaser.js');
 var mongo = require('./customModules/mongo.js');
 var mailer = require('./customModules/mailer.js');
-var TIME_IN_DAY = 1000*30;
-var numDay = 0;
-emailEveryone(numDay);
-setInterval(function(){
-	numDay++;
-	emailEveryone(numDay);
-}, TIME_IN_DAY);
+var TIME_IN_HOUR = 1000*60*60;
+var TIME_IN_DAY = 1000*30; // TODO: make correct figure
 
+var numDay = 0;
+// emailEveryone(numDay);
+// setInterval(function(){
+// 	numDay++;
+// 	emailEveryone(numDay);
+// }, TIME_IN_DAY);
+
+addSummariesToDb();
+setInterval(function() {
+	addSummariesToDb();
+}, TIME_IN_HOUR);
 
 // TODO: get the summaries of the subscriptions from mongo
 function emailEveryone(numDay) {
@@ -50,9 +77,39 @@ function emailEveryone(numDay) {
 			if (!user) return;
 			console.log(user);
 			mongo.getSubscriptions(user.user, function(subscriptions) {
-				mailer.sendMail(user.email, "Chinmay");
+				for (var i in subscriptions) {
+					var sub = subscriptions[i];
+					mongo.getSummaries(sub.name, function(summaries) {
+						summaries.each(function(err, summary) {
+							mailer.sendMail(user.email, JSON.stringify(summary));						
+						});
+					});
+				}
 			});
 		});
 	});
+}
+
+
+function addSummariesToDb() {
+	var team = "Arizona Cardinals";
+		console.log(team);
+		espn.getESPNHeadlines(function(articles) {
+			articles.forEach(function(val, index) {
+				textteaser.getSummary(val.title, val.text, function(summary) {
+					console.log(summary);
+					var obj = {
+						title : val.title,
+						name : val.team,
+						url : val.url,
+						summary : summary
+					};
+					mongo.addSummary(obj);
+				});
+			});
+		}, team);
+
+
+	// yahoo.getYahooHeadlines(summarize(mongo.addArticles));
 }
 
