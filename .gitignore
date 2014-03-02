@@ -19,3 +19,5 @@ config.js
 
 chinTest
 chinTest/*
+
+app/server/modules/email-settings.js
