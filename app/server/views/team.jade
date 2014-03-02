@@ -1,0 +1,30 @@
+
+extends layout
+
+block signout
+	button#btn-logout.btn.btn-primary
+		i.icon-lock.icon-white
+		| Sign Out
+
+block content
+	.home-container
+		.well
+			#accordion.panel-group
+				- for (var i in summaries)
+					- var summary = summaries[i]
+					.panel.panel-default
+						.panel-heading
+							h4.panel-title
+							a(data-toggle='collapse', data-parent='#accordion', href='#collapseOne')= summary.title
+						#collapseOne.panel-collapse.collapse
+							.panel-body
+								p= summary.text
+								a(href=summary.url) Original article
+
+
+block scripts
+	script(src='/vendor/jquery.min.js')
+	script(src='/vendor/jquery.form.js')
+	script(src='/vendor/bootstrap-modal.js')
+	script(src='/vendor/bootstrap-transition.js')
+	script(src='/vendor/bootstrap.min.js')

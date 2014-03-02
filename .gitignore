@@ -16,7 +16,14 @@ node_modules
 
 node_modules/*
 config.js
+
+
+justinTest
+justinTest/*
+
 alexTest
+
 chinTest
 chinTest/*
 app/server/modules/email-settings.js
+
