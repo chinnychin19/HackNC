@@ -1,0 +1,32 @@
+
+extends layout
+
+block signout
+	button#btn-logout.btn.btn-primary
+		i.icon-lock.icon-white
+		| Sign Out
+
+block content
+	.home-container
+		.well
+			.panel.panel-default
+				table.table
+					tr
+						th Team
+						th Frequency (Days)
+						th
+					- for (var i=0; i < subscriptions.length; i++)
+						- var subscription = subscriptions[i]
+						tr
+							td= subscription.name
+							td= subscription.frequency
+							td
+								a(href="/subscriptions/remove/"+subscription.name) Remove
+			a(href="subscriptions/new") Add
+
+block scripts
+	script(src='/vendor/jquery.min.js')
+	script(src='/vendor/jquery.form.js')
+	script(src='/vendor/bootstrap-modal.js')
+	script(src='/vendor/bootstrap-transition.js')
+	script(src='/vendor/bootstrap.min.js')

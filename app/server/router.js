@@ -1,10 +1,14 @@
 
 var AM = require('./modules/account-manager');
 var EM = require('./modules/email-dispatcher');
+var mongo = require('../../customModules/mongo.js');
 
 module.exports = function(app) {
 
 // main login page //
+	app.get('/', function(req, res) {
+		res.redirect('/login');
+	});
 
 	app.get('/login', function(req, res){
 	// check if the user's credentials are saved in a cookie //
@@ -54,7 +58,7 @@ module.exports = function(app) {
 	});
 
 	//TODO: get team's article summaries and links from Mongo
-	app.get('/:team', function(req, res) {
+	app.get('/team/:team', function(req, res) {
 	    if (req.session.user == null){
 	// if user is not logged-in redirect back to login page //
 	        res.redirect('/login');
@@ -65,6 +69,47 @@ module.exports = function(app) {
 				summaries : [{title:"shaq attack", "text": "this sentence. that sentence. more sentence.", "url":"http://www.google.com"}]
 			});
 	    }
+	});
+
+	app.get('/subscriptions', function(req, res) {
+	    if (req.session.user == null){
+	// if user is not logged-in redirect back to login page //
+	        res.redirect('/login');
+	    }   else {
+	    	mongo.getSubscriptions(req.session.user.user, function(subscriptions) {
+			res.render('subscriptions', {
+					udata : req.session.user,
+					subscriptions : subscriptions,
+				});
+	    	});
+		    }
+	});
+
+	app.get('/subscriptions/new', function(req, res) {
+	    if (req.session.user == null){
+	// if user is not logged-in redirect back to login page //
+	        res.redirect('/login');
+	    }   else {
+			res.render('new_subscription', {
+				udata : req.session.user,
+			});
+	    }
+	});
+
+	app.post('/subscriptions/new', function(req, res) {
+		var subscription = {
+			name: req.body.name,
+			frequency: req.body.frequency
+		};
+		mongo.addSubscription(req.session.user.user, subscription, function() {
+		    res.redirect('/subscriptions');
+		});
+	});
+
+	app.get('/subscriptions/remove/:team', function(req, res) {
+		mongo.removeSubscription(req.session.user.user, req.params.team, function() {
+			res.redirect('/subscriptions');
+		});
 	});
 		
 // creating new accounts //
@@ -79,6 +124,7 @@ module.exports = function(app) {
 			email 	: req.param('email'),
 			user 	: req.param('user'),
 			pass	: req.param('pass'),
+			subscriptions : [], //initially no subscriptions
 		}, function(e){
 			if (e){
 				res.send(e, 400);
