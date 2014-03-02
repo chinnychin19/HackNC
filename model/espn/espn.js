@@ -1,5 +1,5 @@
 /*
-espn.js 
+testEspn.js 
 It is what you think it is.
 */
 /*
@@ -15,33 +15,53 @@ Actually lies I have unlimited coffee.
     return (array.indexOf(search) >= 0) ? true : false; 
 }
 
-var config = require('../config.js');
+var config = require('../../config.js');
 var unirest = require("unirest");
 var nodeIO = require("node.io");
-var jsdom = require("jsdom").jsdom;
 var fs = require("fs");
+
+
+var jsdom = require("jsdom").jsdom;
 var window = jsdom().parentWindow;
 
-var espnTeamIds = require("./espnTeamIds.js");
+var espnTeamIds = require("./espnTeamIds.json");
 var myTeams = ["Arizona Cardinals", "Miami Dolphins"]; // need to get from external file
 var settings = {"myTeams:" : myTeams, "numResults": 3}; 
 var APIKEY = config.espnAPI;
 var SECRET = config.espnSecret;
-var espnArticles;
+var espnArticles = [];
+var espnHeadlines = [];
 //default call
-function initESPN(){
-espnArticles = [];
+function getESPNHeadlines(callback){
+	initESPN(callback);
+	/*var titlesText = {};
+	for(var i in espnArticles){
+		var key = espnHeadlines[i]
+		console.log(key);
+		//titlesText[key] = espnArticles[i];
+	}
+	console.log(titlesText);*/
+	//console.log(espnArticles)
+	//for(var headline in espnHeadlines);
+	//return titlesText;
+	}
+function initESPN(callback){
+
 var ESPN = unirest.get("http://api.espn.com/v1/sports/football/nfl/news/?disable=mobileStory%2Caudio&limit="+settings['numResults']+"&apikey=" + APIKEY)
 .headers({ 
     "X-Mashape-Authorization": "5G3CQhAh3RChs4M6jV01J5ga5cVQC3rp"
   })
   .end(function (response) {
+  	var listToBePopulated = [];
     var articlesToScrape = filter(response["body"]["headlines"]);
-   // console.log(articlesToScrape.length)
-   scrapeArticles(articlesToScrape);
+    for (var article in articlesToScrape){
+    	var headline = articlesToScrape[article]["headline"];
+    	espnHeadlines[article] = headline;
+    
+    }
+   scrapeArticles(articlesToScrape, listToBePopulated, callback);
   });	
 }
-
 var image_base_url = "http://a1.espncdn.com/prod/assets/clubhouses/2010/nfl/bg_elements/teamlogos/"; //+ abbrev + .png
 function getTeamInformation(){
 
@@ -67,28 +87,31 @@ fs.writeFile("espnTeamIds.json", JSON.stringify(data), function(err) {
     }
 }); 
 });
+
+
+}
 //get link to article. 
 //Article text is all in .article p
-function scrapeArticles(articlesToScrape){
+function scrapeArticles(articlesToScrape, listToBePopulated, callback){
 	//console.log(articlesToScrape);
 	for (article in articlesToScrape){		
 		var pageUrl = articlesToScrape[article]["links"]["web"]["href"];
-		getEspnHtml(pageUrl);		
+		getEspnHtml(pageUrl, listToBePopulated, articlesToScrape.length, callback);		
 	}
 
 }
 
-function getEspnHtml(pageUrl){
+function getEspnHtml(pageUrl, listToBePopulated, numArticles, callback){
 	nodeIO.scrape(function() {    
     this.getHtml(pageUrl, function(err, $){
       if(err)
       	console.log("Error", err)
-     var html = getEspnArticle(err,$);
+     var html = getEspnArticle(err,$, listToBePopulated, numArticles, callback);
      
     });  
 });
 }
-function getEspnArticle(err, $){
+function getEspnArticle(err, $, listToBePopulated, numArticles, callback){
 	//console.log("call ");
 	var articleText = "";
 	var raw_text = "";
@@ -96,8 +119,10 @@ function getEspnArticle(err, $){
 		raw_text += processParagraph(raw_p);
 	})
 	articleText = clean_text(raw_text);
-	espnArticles.push(articleText);
-	console.log(espnArticles);
+	listToBePopulated.push(articleText);
+	if (listToBePopulated.length == numArticles){
+		callback(listToBePopulated);
+	}
 }
 function processParagraph(raw_p){
 	var raw_text = "";
@@ -172,4 +197,6 @@ function filter(articles){
 	}
 	return raw_articles;
 }
-initESPN();
+exports.getESPNHeadlines=getESPNHeadlines;
+//callback is needed 
+//getTeamInformation();
