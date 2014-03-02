@@ -54,12 +54,14 @@ var ESPN = unirest.get("http://api.espn.com/v1/sports/football/nfl/news/?disable
   .end(function (response) {
   	var listToBePopulated = [];
     var articlesToScrape = filter(response["body"]["headlines"]);
+    var espnHeadlines = [];
+    var pageUrls = [];
     for (var article in articlesToScrape){
     	var headline = articlesToScrape[article]["headline"];
     	espnHeadlines[article] = headline;
     
     }
-   scrapeArticles(articlesToScrape, listToBePopulated, callback);
+   scrapeArticles(articlesToScrape, listToBePopulated, espnHeadlines, pageUrls, callback);
   });	
 }
 var image_base_url = "http://a1.espncdn.com/prod/assets/clubhouses/2010/nfl/bg_elements/teamlogos/"; //+ abbrev + .png
@@ -92,26 +94,27 @@ fs.writeFile("espnTeamIds.json", JSON.stringify(data), function(err) {
 }
 //get link to article. 
 //Article text is all in .article p
-function scrapeArticles(articlesToScrape, listToBePopulated, callback){
+function scrapeArticles(articlesToScrape, listToBePopulated, espnHeadlines, pageUrls, callback){
 	//console.log(articlesToScrape);
 	for (article in articlesToScrape){		
 		var pageUrl = articlesToScrape[article]["links"]["web"]["href"];
-		getEspnHtml(pageUrl, listToBePopulated, articlesToScrape.length, callback);		
+		pageUrls.push(pageUrl);
+		getEspnHtml(pageUrl, listToBePopulated, espnHeadLines pageUrls, callback);		
 	}
 
 }
 
-function getEspnHtml(pageUrl, listToBePopulated, numArticles, callback){
+function getEspnHtml(pageUrl, listToBePopulated, espnHeadLines, pageUrls, callback){
 	nodeIO.scrape(function() {    
     this.getHtml(pageUrl, function(err, $){
       if(err)
       	console.log("Error", err)
-     var html = getEspnArticle(err,$, listToBePopulated, numArticles, callback);
+     var html = getEspnArticle(err,$, pageUrl,listToBePopulated, espnHeadlines, pageUrls, callback);
      
     });  
 });
 }
-function getEspnArticle(err, $, listToBePopulated, numArticles, callback){
+function getEspnArticle(err, $, pageUrl, listToBePopulated, espnHeadlines, pageUrls, callback){
 	//console.log("call ");
 	var articleText = "";
 	var raw_text = "";
@@ -120,9 +123,15 @@ function getEspnArticle(err, $, listToBePopulated, numArticles, callback){
 	})
 	articleText = clean_text(raw_text);
 	listToBePopulated.push(articleText);
-	if (listToBePopulated.length == numArticles){
-		callback(listToBePopulated);
+	if (listToBePopulated.length == espnHeadlines.length){
+		callback(zip(listToBePopulated, pageUrls, espnHeadLines);
 	}
+}
+function zip(a, b, c){
+	ret = [];
+for (var i = 0; i < a.length; i++)
+	ret[i] = {"title": c[i], "story": a[i], "url": b[i]}
+return ret;
 }
 function processParagraph(raw_p){
 	var raw_text = "";
