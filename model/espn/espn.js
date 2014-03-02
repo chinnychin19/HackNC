@@ -32,8 +32,8 @@ var SECRET = config.espnSecret;
 var espnArticles = [];
 var espnHeadlines = [];
 //default call
-function getESPNHeadlines(callback){
-	initESPN(callback);
+function getESPNHeadlines(callback, team){
+	initESPN(team, callback);
 	/*var titlesText = {};
 	for(var i in espnArticles){
 		var key = espnHeadlines[i]
@@ -45,7 +45,7 @@ function getESPNHeadlines(callback){
 	//for(var headline in espnHeadlines);
 	//return titlesText;
 	}
-function initESPN(callback){
+function initESPN(team,callback){
 
 var ESPN = unirest.get("http://api.espn.com/v1/sports/football/nfl/news/?disable=mobileStory%2Caudio&limit="+settings['numResults']+"&apikey=" + APIKEY)
 .headers({ 
@@ -53,7 +53,7 @@ var ESPN = unirest.get("http://api.espn.com/v1/sports/football/nfl/news/?disable
   })
   .end(function (response) {
   	var listToBePopulated = [];
-    var articlesToScrape = filter(response["body"]["headlines"]);
+    var articlesToScrape = filter(response["body"]["headlines"], team);
     var espnHeadlines = [];
     var pageUrls = [];
     for (var article in articlesToScrape){
@@ -99,7 +99,7 @@ function scrapeArticles(articlesToScrape, listToBePopulated, espnHeadlines, page
 	for (article in articlesToScrape){		
 		var pageUrl = articlesToScrape[article]["links"]["web"]["href"];
 		pageUrls.push(pageUrl);
-		getEspnHtml(pageUrl, listToBePopulated, espnHeadLines pageUrls, callback);		
+		getEspnHtml(pageUrl, listToBePopulated, espnHeadLines, pageUrls, callback);		
 	}
 
 }
@@ -124,13 +124,15 @@ function getEspnArticle(err, $, pageUrl, listToBePopulated, espnHeadlines, pageU
 	articleText = clean_text(raw_text);
 	listToBePopulated.push(articleText);
 	if (listToBePopulated.length == espnHeadlines.length){
-		callback(zip(listToBePopulated, pageUrls, espnHeadLines);
+		callback(zip(listToBePopulated, pageUrls, espnHeadLines));
 	}
 }
 function zip(a, b, c){
 	ret = [];
-for (var i = 0; i < a.length; i++)
-	ret[i] = {"title": c[i], "story": a[i], "url": b[i]}
+for (var i = 0; i < a.length; i++){
+	ret[i] = {"title": c[i], "story": a[i], "url": b[i]};
+	console.log(ret[i]);
+}
 return ret;
 }
 function processParagraph(raw_p){
@@ -187,7 +189,7 @@ settings["numResults"] = results;
 Inputs: All the articles originally pulled down by the ESPN API
 Outputs: The articles related to our specific teams 
 */
-function filter(articles){
+function filter(articles, team){
 	var raw_articles = [];
 	for (var a in articles){
 		var article = articles[a];
@@ -196,7 +198,7 @@ function filter(articles){
 				var description = article["categories"][cat]["description"];
 				//console.log(typeof(description))
 				for (var team in myTeams){					
-				if (description.contains(myTeams[team]) && !isInArray(raw_articles, article))
+				if (description.contains(team) && !isInArray(raw_articles, article))
 						raw_articles.push(article);
 				}
 			}
