@@ -12,7 +12,7 @@ var window = jsdom().parentWindow;
 var params = [];
 //var baseYahoo = getBase('http://sports.yahoo.com/', params); // need to build a way of changing the base of the reqest to check the headlines of specific pages
 var baseYahoo = 'http://sports.yahoo.com'; 
-var articles = []; //will hold each article text.
+var yahooArticles = []; //will hold each article text.
 /*
 Inputs: Params that decide which subsection of sports yahoo to look in.
 */
@@ -20,14 +20,15 @@ function getArticles(){
   var base = determineBaseURL(params);
   //Step 2: call initYahoo using (baseURL)
   initYahoo(base);
-  return articles;
+  console.log(yahooArticles.length)
+  return yahooArticles;
 }
 function determineBaseURL(search_params){
-  return 'http://sports.yahoo.com';
+  return 'http://sports.yahoo.com/nfl/teams/was';
 }
 
 function initYahoo(base){
-  articles = [];
+//  yahooArticles = [];
 nodeIO.scrape(function() {    
     this.getHtml(base, function(err, $){
       getYahooHeadlines(err, $, base);
@@ -89,21 +90,18 @@ function getYahooPageContent($, pageUrl){
         else{
           raw_text = inner.innerHTML;
         } 
+
         articleText += " " + clean_text(raw_text);
-        //articleText is the final, processed yahoo article.
-              
+        //articleText is the final, processed yahoo article.              
    });
     } 
   });
-console.log("Article Text: " + articleText);
-articles.push(articleText);
+console.log(articleText);
+yahooArticles.push(articleText);
 
 }
 
-/*
-Utility Code --> move to a utils.js or other file before deploy
-Must remove #
-*/
+
 function clean_text(raw_input){
 var div = window.document.createElement("div");
 div.innerHTML = raw_input;
@@ -112,5 +110,5 @@ return decoded;
 }
 
 //test.
-console.log(getArticles());
+getArticles();
 
