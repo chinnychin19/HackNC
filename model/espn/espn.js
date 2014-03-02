@@ -99,12 +99,12 @@ function scrapeArticles(articlesToScrape, listToBePopulated, espnHeadlines, page
 	for (article in articlesToScrape){		
 		var pageUrl = articlesToScrape[article]["links"]["web"]["href"];
 		pageUrls.push(pageUrl);
-		getEspnHtml(pageUrl, listToBePopulated, espnHeadLines, pageUrls, callback);		
+		getEspnHtml(pageUrl, listToBePopulated, espnHeadlines, pageUrls, callback);		
 	}
 
 }
 
-function getEspnHtml(pageUrl, listToBePopulated, espnHeadLines, pageUrls, callback){
+function getEspnHtml(pageUrl, listToBePopulated, espnHeadlines, pageUrls, callback){
 	nodeIO.scrape(function() {    
     this.getHtml(pageUrl, function(err, $){
       if(err)
@@ -115,7 +115,7 @@ function getEspnHtml(pageUrl, listToBePopulated, espnHeadLines, pageUrls, callba
 });
 }
 function getEspnArticle(err, $, pageUrl, listToBePopulated, espnHeadlines, pageUrls, callback){
-	//console.log("call ");
+	console.log("espnArticle");
 	var articleText = "";
 	var raw_text = "";
 	$(".article p").each(function(raw_p){
@@ -123,12 +123,15 @@ function getEspnArticle(err, $, pageUrl, listToBePopulated, espnHeadlines, pageU
 	})
 	articleText = clean_text(raw_text);
 	listToBePopulated.push(articleText);
+	console.log(listToBePopulated);
 	if (listToBePopulated.length == espnHeadlines.length){
-		callback(zip(listToBePopulated, pageUrls, espnHeadLines));
+		callback(zip(listToBePopulated, pageUrls, espnHeadlines));
 	}
 }
 function zip(a, b, c){
+	console.log("zip");
 	ret = [];
+	console.log(a.length==b.length==c.length);
 for (var i = 0; i < a.length; i++){
 	ret[i] = {"title": c[i], "story": a[i], "url": b[i]};
 	console.log(ret[i]);
@@ -208,6 +211,9 @@ function filter(articles, target){
 	}
 	return raw_articles;
 }
-exports.getESPNHeadlines=getESPNHeadlines;
+//exports.getESPNHeadlines=getESPNHeadlines;
 //callback is needed 
+getESPNHeadlines(function(articles){
+	console.log(articles);
+}, "Miami Dolphins")
 //getTeamInformation();
